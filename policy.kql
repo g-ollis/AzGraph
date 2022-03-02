@@ -1,0 +1,14 @@
+policyresources
+| where ["kind"] == "policyassignments"
+| extend policyDefinitionId = tolower(tostring(parse_json(properties).policyDefinitionId))
+| extend policyName = tostring(parse_json(properties).displayName)
+| join (
+    policyresources
+    | where ['kind'] == "policystates"
+    | extend policyDefinitionId = tolower(tostring(parse_json(properties).policyDefinitionId))
+    )
+    on $left.policyDefinitionId == $right.policyDefinitionId
+| extend complianceState = tostring(parse_json(properties1).complianceState)
+| extend policyAction = tostring(parse_json(properties1).policyDefinitionAction)
+| extend resourceId = tostring(parse_json(properties1).resourceId)
+| project complianceState, policyName, policyAction, resourceId
